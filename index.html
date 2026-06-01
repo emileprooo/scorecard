@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="nl"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Scorecard">
+<title>PRO · Scorecard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#141414;--elev:#1a1916;--fg:#f6f4ef;--fg2:#cfd0d1;--fg3:#a8a7a1;--fg4:#6e6e69;--rule:#3a3a37;--accent:#fd5926;--accent-fg:#141414;--green:#3f6b3a;--mono:'JetBrains Mono',ui-monospace,Menlo,monospace;--human:'Inter',-apple-system,sans-serif}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--human);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{padding:22px 16px 80px;max-width:680px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:18px}
+.monolith{font-family:var(--mono);font-weight:800;letter-spacing:.4em;font-size:19px}
+.eyebrow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.18em;font-size:10px;color:var(--fg3)}
+/* form panel */
+.panel{border:.5px solid var(--rule);background:var(--elev);padding:18px 16px;margin-bottom:22px}
+.panel h2{font-family:var(--mono);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.16em;margin-bottom:16px;color:var(--fg2)}
+label.f{display:block;font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--fg3);margin:0 0 6px}
+select,input{width:100%;background:transparent;color:var(--fg);border:none;border-bottom:1px solid var(--fg4);padding:9px 2px;font-size:16px;margin-bottom:18px;border-radius:0}
+select{font-family:var(--mono);font-size:14px}
+input{font-family:var(--human)}
+select:focus,input:focus{outline:none;border-bottom-color:var(--accent)}
+.btn{width:100%;background:var(--accent);color:var(--accent-fg);border:none;padding:14px;font-family:var(--mono);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:13px;cursor:pointer}
+.btn:active{box-shadow:inset 0 0 0 1px #141414}
+.btn:disabled{opacity:.6}
+/* category nav */
+.cat-nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:14px;margin-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.cat-nav::-webkit-scrollbar{display:none}
+.cat-btn{background:transparent;border:.5px solid var(--fg4);color:var(--fg3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;font-size:11px;padding:7px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:border-color .12s,color .12s}
+.cat-btn.active{border-color:var(--accent);color:var(--accent)}
+.cat-btn:active{background:var(--elev)}
+.section-head{font-family:var(--mono);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--accent);margin-bottom:12px;padding-bottom:6px;border-bottom:.5px solid var(--rule)}
+/* cards */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.card{border:.5px solid var(--rule);background:var(--elev);padding:14px}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.card-label{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:10px;color:var(--fg3);line-height:1.35}
+.plus-btn{background:transparent;border:.5px solid var(--fg4);color:var(--fg4);font-family:var(--mono);font-size:14px;line-height:1;padding:2px 7px;cursor:pointer;flex-shrink:0;transition:border-color .12s,color .12s;margin-top:-2px}
+.plus-btn:hover,.plus-btn:active{border-color:var(--accent);color:var(--accent)}
+.card-val{margin:10px 0 4px;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
+.num{font-family:var(--mono);font-weight:700;font-size:26px;color:var(--fg);letter-spacing:-.01em}
+.num.empty{color:var(--fg4)}
+.unit{font-family:var(--mono);font-size:12px;color:var(--fg3)}
+.dot{display:inline-block;width:7px;height:7px;background:var(--green);margin-left:4px;vertical-align:middle;flex-shrink:0}
+.progress{height:2px;background:var(--rule);margin:6px 0 5px}
+.progress-fill{height:100%;background:var(--accent);transition:width .3s}
+.card-meta{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--fg4)}
+.sigil{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--fg4);text-align:right;margin-top:28px;text-transform:uppercase}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--fg);color:var(--bg);font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;padding:11px 18px;opacity:0;transition:opacity .18s;pointer-events:none;white-space:nowrap}
+</style></head>
+<body>
+<div class="top"><span class="monolith">PRO</span><span class="eyebrow" id="eyebrow">Scorecard</span></div>
+
+<div class="panel">
+  <h2>Nieuwe meting</h2>
+  <form id="form" autocomplete="off">
+    <label class="f" for="cat-sel">Categorie</label>
+    <select id="cat-sel"></select>
+    <label class="f" for="metric">Metric</label>
+    <select id="metric"></select>
+    <label class="f" for="value">Waarde</label>
+    <input id="value" type="text" inputmode="decimal" placeholder="bv. 280">
+    <label class="f" for="note">Notitie · optioneel</label>
+    <input id="note" type="text" placeholder="—">
+    <button class="btn" id="save" type="submit">Bewaar</button>
+  </form>
+</div>
+
+<div class="cat-nav" id="cat-nav"></div>
+<div class="section-head" id="section-head"></div>
+<div id="cards"><div class="card-meta">Laden…</div></div>
+
+<div class="sigil">v2026.4 · scorecard</div>
+<div id="toast"></div>
+<script>
+var CAT={fietsen:'Fietsen',longevity:'Longevity',kracht:'Kracht',income:'Inkomen',wealth_net:'Nettovermogen',savings:'Sparen',productivity:'Productiviteit'};
+// Coolify-hosted versie: absolute API URL
+var API='https://meelkgmhexnkjyluhnvn.supabase.co/functions/v1/scorecard';
+var DATA=[];
+var activeCat=null;
+function uniqCats(d){var s={},r=[];d.forEach(function(x){if(!s[x.category]){s[x.category]=true;r.push(x.category);}});return r;}
+function catLabel(c){return CAT[c]||c;}
+function el(t,cls,txt){var e=document.createElement(t);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+function fmtDate(s){return s?String(s).slice(0,10):'';}
+function load(){
+  fetch(API+'?data=1').then(function(r){return r.json();}).then(function(rows){
+    DATA=Array.isArray(rows)?rows:[];
+    var cats=uniqCats(DATA);
+    if(!activeCat||cats.indexOf(activeCat)===-1)activeCat=cats[0]||null;
+    renderAll();
+  }).catch(function(){document.getElementById('cards').innerHTML='<div class="card-meta">Fout bij laden.</div>';});
+}
+function renderAll(){renderCatNav();renderCards();renderFormSelects();}
+function renderCatNav(){
+  var nav=document.getElementById('cat-nav');nav.innerHTML='';
+  uniqCats(DATA).forEach(function(cat){
+    var btn=el('button','cat-btn'+(cat===activeCat?' active':''),catLabel(cat));
+    btn.addEventListener('click',function(){activeCat=cat;renderCatNav();renderSectionHead();renderCards();});
+    nav.appendChild(btn);
+  });
+  renderSectionHead();
+}
+function renderSectionHead(){
+  document.getElementById('section-head').textContent=activeCat?catLabel(activeCat):'';
+  document.getElementById('eyebrow').textContent='Scorecard'+(activeCat?' · '+catLabel(activeCat):'');
+}
+function renderCards(){
+  var wrap=document.getElementById('cards');wrap.innerHTML='';
+  var rows=DATA.filter(function(d){return d.category===activeCat;});
+  var grid=el('div','grid');
+  rows.forEach(function(d){grid.appendChild(buildCard(d));});
+  wrap.appendChild(grid);
+}
+function buildCard(d){
+  var c=el('div','card');
+  var hdr=el('div','card-header');
+  hdr.appendChild(el('div','card-label',d.display_name));
+  var plus=el('button','plus-btn','+');
+  plus.type='button';
+  plus.title='Meting invoeren';
+  plus.addEventListener('click',function(ev){ev.stopPropagation();prefillForm(d);});
+  hdr.appendChild(plus);
+  c.appendChild(hdr);
+  var valRow=el('div','card-val');
+  var has=d.value!=null||d.value_text!=null;
+  var numEl=el('span','num'+(has?'':' empty'),has?String(d.value!=null?d.value:d.value_text):'—');
+  valRow.appendChild(numEl);
+  if(d.value!=null&&d.unit)valRow.appendChild(el('span','unit',d.unit));
+  if(d.target_value!=null&&d.value!=null){
+    var ok=d.direction==='lower_better'?(d.value<=d.target_value):(d.value>=d.target_value);
+    if(ok)valRow.appendChild(el('span','dot'));
+  }
+  c.appendChild(valRow);
+  if(d.target_value!=null&&d.value!=null){
+    var pct=Math.min(100,Math.round((d.value/d.target_value)*100));
+    var pb=el('div','progress');var pf=el('div','progress-fill');pf.style.width=pct+'%';pb.appendChild(pf);c.appendChild(pb);
+    c.appendChild(el('div','card-meta','doel: '+d.target_value+(d.unit?' '+d.unit:'')+' · '+pct+'%'));
+    if(d.recorded_at)c.appendChild(el('div','card-meta',fmtDate(d.recorded_at)));
+  } else if(d.target_value!=null){
+    c.appendChild(el('div','card-meta','doel: '+d.target_value+(d.unit?' '+d.unit:'')));
+    c.appendChild(el('div','card-meta','nog geen meting'));
+  } else {
+    c.appendChild(el('div','card-meta',d.recorded_at?('gemeten '+fmtDate(d.recorded_at)):'nog geen meting'));
+  }
+  return c;
+}
+function prefillForm(d){
+  var catSel=document.getElementById('cat-sel');catSel.value=d.category;updateMetricSelect();
+  document.getElementById('metric').value=d.metric_key;
+  document.getElementById('value').focus();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderFormSelects(){
+  var catSel=document.getElementById('cat-sel');var prev=catSel.value;catSel.innerHTML='';
+  uniqCats(DATA).forEach(function(cat){
+    var o=document.createElement('option');o.value=cat;o.textContent=catLabel(cat);catSel.appendChild(o);
+  });
+  if(prev&&uniqCats(DATA).indexOf(prev)!==-1)catSel.value=prev;
+  catSel.removeEventListener('change',updateMetricSelect);
+  catSel.addEventListener('change',updateMetricSelect);
+  updateMetricSelect();
+}
+function updateMetricSelect(){
+  var cat=document.getElementById('cat-sel').value;
+  var msel=document.getElementById('metric');var prevKey=msel.value;msel.innerHTML='';
+  DATA.filter(function(d){return d.category===cat;}).forEach(function(d){
+    var o=document.createElement('option');o.value=d.metric_key;o.textContent=d.display_name+(d.unit?' · '+d.unit:'');msel.appendChild(o);
+  });
+  if(prevKey)msel.value=prevKey;
+}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},2200);}
+document.getElementById('form').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var key=document.getElementById('metric').value;
+  var val=document.getElementById('value').value;
+  var note=document.getElementById('note').value;
+  if(!key){toast('Kies een metric');return;}
+  var def=DATA.find(function(d){return d.metric_key===key;});
+  var btn=document.getElementById('save');btn.disabled=true;btn.textContent='Bezig…';
+  fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({metric_key:key,value:val,note:note,scope_type:def?def.scope_type:null,scope_ref:def?def.scope_ref:null})})
+  .then(function(r){return r.json();}).then(function(res){
+    btn.disabled=false;btn.textContent='Bewaar';
+    if(res.ok){document.getElementById('value').value='';document.getElementById('note').value='';toast('Bewaard ✓');load();}
+    else{toast('Fout '+(res.status||''));}
+  }).catch(function(){btn.disabled=false;btn.textContent='Bewaar';toast('Netwerkfout');});
+});
+load();
+</script>
+</body></html>
