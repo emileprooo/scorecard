@@ -75,12 +75,15 @@ select:focus,input:focus{outline:none;border-bottom-color:var(--accent)}
 <div class="section-head" id="section-head"></div>
 <div id="cards"><div class="card-meta">Laden…</div></div>
 
-<div class="sigil">v2026.4 · scorecard</div>
+<div class="sigil">v2026.5 · scorecard</div>
 <div id="toast"></div>
 <script>
 var CAT={fietsen:'Fietsen',longevity:'Longevity',kracht:'Kracht',income:'Inkomen',wealth_net:'Nettovermogen',savings:'Sparen',productivity:'Productiviteit'};
 // Coolify-hosted versie: absolute API URL
 var API='https://meelkgmhexnkjyluhnvn.supabase.co/functions/v1/scorecard';
+// Schrijf-token: lees uit de URL-hash (#t=...) en bewaar lokaal. Zo blijft de token UIT de publieke repo —
+// open de app eenmalig op je telefoon met …/scorecard#t=<token> en sla op als homescreen-icoon.
+var TOKEN=(function(){try{var h=new URLSearchParams((location.hash||'').slice(1));var t=h.get('t');if(t){localStorage.setItem('sc_token',t);if(history.replaceState)history.replaceState(null,'',location.pathname+location.search);return t;}return localStorage.getItem('sc_token')||'';}catch(e){return '';}})();
 var DATA=[];
 var activeCat=null;
 function uniqCats(d){var s={},r=[];d.forEach(function(x){if(!s[x.category]){s[x.category]=true;r.push(x.category);}});return r;}
@@ -182,7 +185,7 @@ document.getElementById('form').addEventListener('submit',function(ev){
   if(!key){toast('Kies een metric');return;}
   var def=DATA.find(function(d){return d.metric_key===key;});
   var btn=document.getElementById('save');btn.disabled=true;btn.textContent='Bezig…';
-  fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({metric_key:key,value:val,note:note,scope_type:def?def.scope_type:null,scope_ref:def?def.scope_ref:null})})
+  fetch(API,{method:'POST',headers:{'Content-Type':'application/json','x-scorecard-token':TOKEN},body:JSON.stringify({metric_key:key,value:val,note:note,scope_type:def?def.scope_type:null,scope_ref:def?def.scope_ref:null})})
   .then(function(r){return r.json();}).then(function(res){
     btn.disabled=false;btn.textContent='Bewaar';
     if(res.ok){document.getElementById('value').value='';document.getElementById('note').value='';toast('Bewaard ✓');load();}
